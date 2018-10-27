@@ -1,34 +1,87 @@
 #include <string.h>
+#include <stdlib.h>
 #include "cmdParser.h"
 
 static Command *cmd_table;
-static int t_s;
+static size_t t_s;
 
-void setCmdTable (Command *table,int table_size){
+
+/**
+ * @brief private memory mannagement
+ * @param cmd_size
+ * @return
+ */
+static void* getMemoryBlock (size_t cmd_size){
+    static void* mem_block;
+    static unsigned int mem_block_size = 0;
+
+    // Só realoca o buffer se o comando for maior que o já alocado
+    if( mem_block_size < cmd_size ){
+        //cada comando adiciona um \0 a mais. esse valor adiconado a mais é impirico
+        /**TODO achar um método melhor de compensar os bytes adicionais*/
+        void* new_block = realloc(mem_block,cmd_size +20);
+
+        if(new_block != NULL)
+            mem_block = new_block;
+    }else if(cmd_size == 0){
+        free(mem_block);
+        mem_block = null;
+    }
+
+    return mem_block;
+}
+
+void setCmdTable (Command *table,size_t table_size){
 	
 	cmd_table = table;
 	t_s = table_size;
 }
 
-bool readCmd (char *input) {
+int_fast8_t readCmd (char *input) {
 	
-	char args[10][10]; // limitação de 10 argumentos de tamanho 10
+    char *argsv[100]; // limitação de 100 argumentos
+
+    // bloco onde será copiado cada um dos argumentos
+    char *block = (char *)getMemoryBlock(strlen(input));
  
-	// vamos seprarar comando e argumentos por espaço ' '
+    // Commando e argumentos são separados por ' '
 	char *cmd = strtok(input," ");
- 
+
+    // Se o comando não conter argumentos (logo não contém espaço)
+    if(cmd == NULL){
+        cmd = input;
+    }
+
+
+    strcpy(block,cmd);
+
+
+    int cmd_index = 0;
+    argsv[cmd_index++] = block; // Já carrega no argv[0] o nome do comando, como padrão.
+
+    // Prepara o block para receber o próximo argumento
+    block += strlen(cmd) +1;
+
+
 	char *arg = strtok(NULL," ");
-	char arg_index = 0;
-	while((arg != NULL) && (arg_index == 0)){
-		strcpy(args[arg_index++],arg);
+    while(arg != NULL){
+        strcpy(block,arg);
+        argsv[cmd_index++] = block;
+        block += strlen(arg) +1;
 		
 		arg = strtok(NULL," ");
 	}
 	
-	for(int i = 0; i < t_s; i++){
+    for(unsigned int i = 0; i < t_s; i++){
 		if(!strcmp(cmd_table[i].name,cmd)){
-			cmd_table[i].func(args);
-			return true;
+            cmd_table[i].func(cmd_index,argsv);
+            return 0;
 		}
 	}
+
+    return -1;
+}
+
+void closeCmdParser (){
+    getMemoryBlock(0);
 }

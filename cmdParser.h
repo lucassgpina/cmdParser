@@ -1,12 +1,14 @@
 #ifndef __CMD_PARSER_H_
 #define __CMD_PARSER_H_
 
+#include <cstdint>
+
 typedef struct {
 	char name[20];
-	void(*func)(char args[10][10]);
+        void(*func)(int argc, char *argv[]);
 }Command;
 
-bool readCmd (char *input);
-void setCmdTable (Command *table,int table_size);
+int_fast8_t readCmd (char *input);
+void setCmdTable (Command *table,size_t table_size);
 
 #endif
