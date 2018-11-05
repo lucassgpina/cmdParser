@@ -6,11 +6,9 @@ static Command *cmd_table;
 static size_t t_s;
 
 
-/**
- * @brief private memory mannagement
- * @param cmd_size
- * @return
- */
+// 
+// gerenciamento de memória
+// 
 static void* getMemoryBlock (size_t cmd_size){
     static void* mem_block;
     static unsigned int mem_block_size = 0;
@@ -19,25 +17,37 @@ static void* getMemoryBlock (size_t cmd_size){
     if( mem_block_size < cmd_size ){
         //cada comando adiciona um \0 a mais. esse valor adiconado a mais é impirico
         /**TODO achar um método melhor de compensar os bytes adicionais*/
-        void* new_block = realloc(mem_block,cmd_size +20);
+        mem_block_size =cmd_size +20;
+        void* new_block = realloc(mem_block,mem_block_size);
 
         if(new_block != NULL)
             mem_block = new_block;
     }else if(cmd_size == 0){
         free(mem_block);
-        mem_block = null;
+        mem_block = NULL;
     }
 
     return mem_block;
 }
 
+/**
+ * @brief Init the command table
+ * @param table
+ * @param table_size
+ */
 void setCmdTable (Command *table,size_t table_size){
 	
 	cmd_table = table;
 	t_s = table_size;
 }
 
-int_fast8_t readCmd (char *input) {
+
+/**
+ * @brief readCmd
+ * @param String with a null terminator containing the command + arguments
+ * @return
+ */
+int readCmd (char *input) {
 	
     char *argsv[100]; // limitação de 100 argumentos
 
@@ -72,14 +82,14 @@ int_fast8_t readCmd (char *input) {
 		arg = strtok(NULL," ");
 	}
 	
+	int ret = 0;
     for(unsigned int i = 0; i < t_s; i++){
 		if(!strcmp(cmd_table[i].name,cmd)){
-            cmd_table[i].func(cmd_index,argsv);
-            return 0;
+            ret = cmd_table[i].func(cmd_index,argsv);
 		}
 	}
 
-    return -1;
+    return ret;
 }
 
 void closeCmdParser (){
