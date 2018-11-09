@@ -10,6 +10,8 @@ static size_t t_s;
 // gerenciamento de memória
 // 
 static void* getMemoryBlock (size_t cmd_size){
+
+#ifndef CMD_MEMBLOCK_SIZE
     static void* mem_block;
     static unsigned int mem_block_size = 0;
 
@@ -26,8 +28,11 @@ static void* getMemoryBlock (size_t cmd_size){
         free(mem_block);
         mem_block = NULL;
     }
-
+#else
+    static void mem_block[CMD_MEMBLOCK_SIZE];
+    static unsigned int mem_block_size = CMD_MEMBLOCK_SIZE;
     return mem_block;
+#endif
 }
 
 /**
