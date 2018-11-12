@@ -29,7 +29,7 @@ static void* getMemoryBlock (size_t cmd_size){
         mem_block = NULL;
     }
 #else
-    static void mem_block[CMD_MEMBLOCK_SIZE];
+    static char mem_block[CMD_MEMBLOCK_SIZE];
     static unsigned int mem_block_size = CMD_MEMBLOCK_SIZE;
     return mem_block;
 #endif
